@@ -1,13 +1,18 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
+
+	"github.com/GotaSuzuki/go_react/backend/api"
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	// http.HandleFunc("/", api.handler)
-	// http.HandleFunc("/todos", api.getTodos)
-	fmt.Println("Server started at :8080")
-	http.ListenAndServe(":8080", nil)
+	r := mux.NewRouter()
+
+	r.HandleFunc("/", api.Handler)
+	r.HandleFunc("/todos", api.GetTodos).Methods(http.MethodGet)
+	log.Println("Server started at :8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
