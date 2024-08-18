@@ -1,24 +1,33 @@
 package api
 
 import (
-	"encoding/json"
-	"io"
-	"net/http"
-
-	"github.com/GotaSuzuki/go_react/backend/models"
+	"database/sql"
 )
 
-func Handler(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "Hello, World!")
+var db *sql.DB
+
+func GetTodos() ([]Todo, error) {
+	rows, err := db.Query("SELECT id, title FROM todos")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var todos []Todo
+	for rows.Next() {
+		var todo Todo
+		if err := rows.Scan(&todo.ID, &todo.Title, &todo.Completed); err != nil {
+			return nil, err
+		}
+		todos = append(todos, todo)
+	}
+	return todos, nil
 }
 
-func GetTodos(w http.ResponseWriter, r *http.Request) {
-	todo1 := models.Todo1
-	jsonData, err := json.Marshal(todo1)
+func CreateTodo(title string) (int64, error) {
+	result, err := db.Exec("INSERT INTO todos (title) VALUES (?)", title)
 	if err != nil {
-		http.Error(w, "fial to encode json\n", http.StatusInternalServerError)
-		return
+		return 0, err
 	}
-
-	w.Write(jsonData)
+	return result.LastInsertId()
 }
